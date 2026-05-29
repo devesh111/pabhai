@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model generations {
+  id            BigInt    @id
+  generation_no Int       @unique(map: "generation_no") @db.SmallInt
+  label         String?   @db.VarChar(100)
+  color         String?   @db.VarChar(50)
+  created_at    DateTime  @default(now()) @db.Timestamp(6)
+  updated_at    DateTime  @default(now()) @db.Timestamp(6)
+  persons       persons[]
+}
+
+model persons {
+  id            BigInt      @id
+  generation_id BigInt
+  father_id     BigInt?
+  person_name   String      @db.VarChar(255)
+  branch        String?     @db.VarChar(20)
+  status        String?     @default("alive") @db.VarChar(20)
+  notes         String?
+  birth_year    Int?        @db.SmallInt
+  death_year    Int?        @db.SmallInt
+  sort_order    Int?        @default(0)
+  created_at    DateTime    @default(now()) @db.Timestamp(6)
+  updated_at    DateTime    @default(now()) @db.Timestamp(6)
+  persons       persons?    @relation("personsTopersons", fields: [father_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_father")
+  other_persons persons[]   @relation("personsTopersons")
+  generations   generations @relation(fields: [generation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_generation")
+}
